@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import { BigButton } from '../ui/BigButton';
 import { colors, font, spacing, radius } from '../ui/theme';
 import { residentes, medicaciones, citasHoy } from '../data/demo';
@@ -19,6 +19,12 @@ export default function PanelCuidadora() {
     >
       <Stack.Screen options={{ title: 'Panel de control' }} />
       <Text style={styles.title}>Turno de mañana</Text>
+      <BigButton
+  label="Ver residentes"
+  variant="neutral"
+  onPress={() => router.push('/residentes')}
+  style={styles.small}
+/>
 
       <View style={[styles.columns, isTablet && styles.row]}>
         <View style={[styles.column, isTablet && styles.columnTablet]}>
