@@ -5,6 +5,7 @@ import { BigButton } from '../ui/BigButton';
 import { colors, font, spacing, radius } from '../ui/theme';
 import type { Residente, Medicacion } from '../data/demo';
 import { getResidentes, getMedicacion, calcularEdad } from '../data/repositorio';
+import { cerrarSesion } from '../data/auth';
 
 function Avatar({ nombre, size = 72 }: { nombre: string; size?: number }) {
   const iniciales = nombre

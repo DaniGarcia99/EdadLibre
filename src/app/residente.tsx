@@ -29,6 +29,15 @@ export default function ResidenteInicio() {
         onPress={() => router.push('/cita')}
         style={{ minHeight: 140 }}
       />
+      <BigButton
+  label="Cerrar sesión"
+  variant="neutral"
+  onPress={async () => {
+    await cerrarSesion();
+    router.replace('/');
+  }}
+  style={{ minHeight: 64 }}
+/>
     </ScrollView>
   );
 }

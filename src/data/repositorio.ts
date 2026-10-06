@@ -1,22 +1,117 @@
-import { residentes, medicaciones, citas, aISO } from './demo';
+import { supabase } from './supabase';
+import { aISO, fechaISO } from './demo';
 import type { Residente, Medicacion, Cita } from './demo';
 
-export { fechaISO } from './demo';
+export { fechaISO };
 
-// Única puerta de entrada a los datos.
-// Hoy lee datos de prueba; más adelante leerá de Supabase
-// sin tener que tocar las pantallas.
+// Única puerta de entrada a los datos: las pantallas no saben de dónde vienen.
+
+const hhmm = (t: string) => t.slice(0, 5);
+
+function aResidente(r: any): Residente {
+  return {
+    id: r.id,
+    nombre: r.nombre,
+    fechaNacimiento: r.fecha_nacimiento,
+    apartamento: r.apartamento,
+    programa: r.programa,
+    necesidades: r.necesidades ?? [],
+    patologias: r.patologias ?? [],
+    alergias: r.alergias ?? [],
+    contacto: r.contacto ?? '',
+  };
+}
+
+function aMedicacion(m: any): Medicacion {
+  return {
+    id: m.id,
+    residenteId: m.residente_id,
+    medicamento: m.medicamento,
+    dosis: m.dosis,
+    hora: hhmm(m.hora),
+  };
+}
+
+function aCita(c: any): Cita {
+  return {
+    id: c.id,
+    residenteId: c.residente_id,
+    especialidad: c.especialidad,
+    fecha: c.fecha,
+    hora: hhmm(c.hora),
+    acompanante: c.acompanante,
+  };
+}
 
 export async function getResidentes(): Promise<Residente[]> {
-  return residentes;
+  const { data, error } = await supabase
+    .from('residentes')
+    .select('*')
+    .eq('activo', true)
+    .order('nombre');
+  if (error) throw error;
+  return (data ?? []).map(aResidente);
 }
 
 export async function getMedicacion(residenteId: string): Promise<Medicacion[]> {
-  return medicaciones.filter((m) => m.residenteId === residenteId);
+  const { data, error } = await supabase
+    .from('medicaciones')
+    .select('*')
+    .eq('residente_id', residenteId)
+    .eq('activa', true)
+    .order('hora');
+  if (error) throw error;
+  return (data ?? []).map(aMedicacion);
+}
+
+export async function getMedicacionActiva(): Promise<Medicacion[]> {
+  const { data, error } = await supabase
+    .from('medicaciones')
+    .select('*')
+    .eq('activa', true)
+    .order('hora');
+  if (error) throw error;
+  return (data ?? []).map(aMedicacion);
 }
 
 export async function getCitas(residenteId?: string): Promise<Cita[]> {
-  return residenteId ? citas.filter((c) => c.residenteId === residenteId) : citas;
+  let consulta = supabase.from('citas').select('*').order('fecha').order('hora');
+  if (residenteId) consulta = consulta.eq('residente_id', residenteId);
+  const { data, error } = await consulta;
+  if (error) throw error;
+  return (data ?? []).map(aCita);
+}
+
+export async function getCitasDia(fecha: string): Promise<Cita[]> {
+  const { data, error } = await supabase
+    .from('citas')
+    .select('*')
+    .eq('fecha', fecha)
+    .order('hora');
+  if (error) throw error;
+  return (data ?? []).map(aCita);
+}
+
+export async function getAdministradasHoy(): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('administraciones')
+    .select('medicacion_id')
+    .eq('fecha', fechaISO(0));
+  if (error) throw error;
+  return (data ?? []).map((a: any) => a.medicacion_id);
+}
+
+export async function marcarAdministrada(medicacionId: string): Promise<void> {
+  const { data: sesion } = await supabase.auth.getSession();
+  const usuario = sesion.session?.user;
+  if (!usuario) throw new Error('Sin sesión');
+  const { error } = await supabase.from('administraciones').insert({
+    medicacion_id: medicacionId,
+    fecha: fechaISO(0),
+    administrada_por: usuario.id,
+  });
+  // 23505 = ya estaba registrada hoy: no es un problema
+  if (error && error.code !== '23505') throw error;
 }
 
 export function calcularEdad(fechaNacimiento: string): number {

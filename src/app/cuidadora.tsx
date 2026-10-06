@@ -1,16 +1,50 @@
-import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { BigButton } from '../ui/BigButton';
 import { colors, font, spacing, radius } from '../ui/theme';
-import { residentes, medicaciones, citasHoy } from '../data/demo';
-
-const buscar = (id: string) => residentes.find((r) => r.id === id);
+import type { Cita, Medicacion, Residente } from '../data/demo';
+import {
+  fechaISO,
+  getAdministradasHoy,
+  getCitasDia,
+  getMedicacionActiva,
+  getResidentes,
+  marcarAdministrada,
+} from '../data/repositorio';
+import { cerrarSesion } from '../data/auth';
 
 export default function PanelCuidadora() {
   const { width } = useWindowDimensions();
   const isTablet = width >= 768;
+
+  const [residentes, setResidentes] = useState<Residente[]>([]);
+  const [medicaciones, setMedicaciones] = useState<Medicacion[]>([]);
+  const [citasHoy, setCitasHoy] = useState<Cita[]>([]);
   const [dadas, setDadas] = useState<string[]>([]);
+
+  useEffect(() => {
+    getResidentes().then(setResidentes);
+    getMedicacionActiva().then(setMedicaciones);
+    getCitasDia(fechaISO(0)).then(setCitasHoy);
+    getAdministradasHoy().then(setDadas);
+  }, []);
+
+  const buscar = (id: string) => residentes.find((r) => r.id === id);
+
+  const administrar = async (id: string) => {
+    try {
+      await marcarAdministrada(id);
+      setDadas((prev) => [...prev, id]);
+    } catch {
+      Alert.alert('No se pudo guardar', 'Inténtalo de nuevo en unos segundos.');
+    }
+  };
+
+  const salir = async () => {
+    await cerrarSesion();
+    router.replace('/');
+  };
 
   return (
     <ScrollView
@@ -19,18 +53,19 @@ export default function PanelCuidadora() {
     >
       <Stack.Screen options={{ title: 'Panel de control' }} />
       <Text style={styles.title}>Turno de mañana</Text>
+
       <BigButton
-  label="Ver residentes"
-  variant="neutral"
-  onPress={() => router.push('/residentes')}
-  style={styles.small}
-/>
-<BigButton
-  label="Calendario de citas"
-  variant="neutral"
-  onPress={() => router.push('/calendario')}
-  style={styles.small}
-/>
+        label="Ver residentes"
+        variant="neutral"
+        onPress={() => router.push('/residentes')}
+        style={styles.small}
+      />
+      <BigButton
+        label="Calendario de citas"
+        variant="neutral"
+        onPress={() => router.push('/calendario')}
+        style={styles.small}
+      />
 
       <View style={[styles.columns, isTablet && styles.row]}>
         <View style={[styles.column, isTablet && styles.columnTablet]}>
@@ -52,7 +87,7 @@ export default function PanelCuidadora() {
                   <BigButton
                     label="Marcar administrada"
                     variant="success"
-                    onPress={() => setDadas((prev) => [...prev, m.id])}
+                    onPress={() => administrar(m.id)}
                     style={styles.small}
                   />
                 )}
@@ -63,6 +98,11 @@ export default function PanelCuidadora() {
 
         <View style={[styles.column, isTablet && styles.columnTablet]}>
           <Text style={styles.section}>Citas médicas (hoy)</Text>
+          {citasHoy.length === 0 && (
+            <View style={styles.card}>
+              <Text style={styles.cardText}>No hay citas hoy</Text>
+            </View>
+          )}
           {citasHoy.map((c) => {
             const r = buscar(c.residenteId);
             return (
@@ -79,6 +119,13 @@ export default function PanelCuidadora() {
           })}
         </View>
       </View>
+
+      <BigButton
+        label="Cerrar sesión"
+        variant="neutral"
+        onPress={salir}
+        style={styles.small}
+      />
     </ScrollView>
   );
 }
