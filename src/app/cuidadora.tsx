@@ -25,6 +25,12 @@ export default function PanelCuidadora() {
   onPress={() => router.push('/residentes')}
   style={styles.small}
 />
+<BigButton
+  label="Calendario de citas"
+  variant="neutral"
+  onPress={() => router.push('/calendario')}
+  style={styles.small}
+/>
 
       <View style={[styles.columns, isTablet && styles.row]}>
         <View style={[styles.column, isTablet && styles.columnTablet]}>

@@ -22,6 +22,7 @@ export type Cita = {
   id: string;
   residenteId: string;
   especialidad: string;
+  fecha: string;
   hora: string;
   acompanante: boolean;
 };
@@ -68,7 +69,27 @@ export const medicaciones: Medicacion[] = [
   { id: 'm3', residenteId: 'r2', medicamento: 'Metformina', dosis: '850 mg', hora: '13:30' },
 ];
 
-export const citasHoy: Cita[] = [
-  { id: 'c1', residenteId: 'r2', especialidad: 'Traumatología', hora: '17:30', acompanante: true },
-  { id: 'c2', residenteId: 'r3', especialidad: 'Análisis', hora: '09:00', acompanante: false },
+export function aISO(d: Date): string {
+  const mes = String(d.getMonth() + 1).padStart(2, '0');
+  const dia = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mes}-${dia}`;
+}
+
+export function fechaISO(offsetDias = 0): string {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDias);
+  return aISO(d);
+}
+
+// Las fechas son relativas a hoy para que la demo siempre tenga citas visibles
+export const citas: Cita[] = [
+  { id: 'c1', residenteId: 'r2', especialidad: 'Traumatología', fecha: fechaISO(0), hora: '17:30', acompanante: true },
+  { id: 'c2', residenteId: 'r3', especialidad: 'Análisis', fecha: fechaISO(0), hora: '09:00', acompanante: false },
+  { id: 'c3', residenteId: 'r1', especialidad: 'Cardiología', fecha: fechaISO(1), hora: '11:00', acompanante: true },
+  { id: 'c4', residenteId: 'r1', especialidad: 'Revisión Sintrom', fecha: fechaISO(2), hora: '10:15', acompanante: false },
+  { id: 'c5', residenteId: 'r2', especialidad: 'Oftalmología', fecha: fechaISO(3), hora: '12:00', acompanante: true },
+  { id: 'c6', residenteId: 'r3', especialidad: 'Dentista', fecha: fechaISO(3), hora: '16:00', acompanante: false },
 ];
+
+// El panel de la cuidadora sigue usando esta lista
+export const citasHoy = citas.filter((c) => c.fecha === fechaISO(0));
