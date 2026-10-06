@@ -62,7 +62,11 @@ export default function PedirCita() {
               {acompanante ? 'Tu cuidadora te acompañará.' : 'Irás por tu cuenta.'}
             </Text>
           </View>
-          <BigButton label="Volver al inicio" onPress={() => router.replace('/')} />
+          <BigButton label="Volver al inicio" onPress={() => router.replace('/residente')
+        
+        
+        
+        } />
         </>
       )}
 

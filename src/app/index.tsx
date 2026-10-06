@@ -1,49 +1,35 @@
-import { ScrollView, Text, View, StyleSheet, useWindowDimensions } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { Stack, router } from 'expo-router';
 import { BigButton } from '../ui/BigButton';
-import { colors, font, spacing, radius } from '../ui/theme';
-import { router } from 'expo-router';
+import { colors, font, spacing } from '../ui/theme';
 
-export default function ResidenteInicio() {
-  const { width } = useWindowDimensions();
-  const isTablet = width >= 768;
-
+export default function SeleccionPerfil() {
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={[styles.container, isTablet && styles.tablet]}
-    >
-      <Text style={styles.hello}>Hola, Antonio</Text>
-
-      <View
-        style={styles.pillCard}
-        accessible
-        accessibilityLabel="Próxima pastilla: Sintrom a las 14:00"
-      >
-        <Text style={styles.pillLabel}>Próxima pastilla</Text>
-        <Text style={styles.pillValue}>Sintrom · 14:00 h</Text>
-      </View>
-
+    <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <Text style={styles.brand}>EdadLibre</Text>
+      <Text style={styles.hello}>Bienvenido</Text>
+      <BigButton label="Soy Residente" onPress={() => router.push('/residente')} />
       <BigButton
-        label="Pedir cita médica"
-        onPress={() => router.push('/cita')}
-        style={{ minHeight: 140 }}
+        label="Soy Cuidadora"
+        variant="neutral"
+        onPress={() => router.push('/cuidadora')}
       />
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: spacing.lg, gap: spacing.lg },
-  tablet: { maxWidth: 720, width: '100%', alignSelf: 'center', padding: spacing.xl },
-  hello: { fontSize: font.hero, fontWeight: '800', color: colors.text },
-  pillCard: {
-    backgroundColor: colors.alertBg,
-    borderRadius: radius,
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
     padding: spacing.lg,
-    gap: spacing.sm,
-    borderWidth: 2,
-    borderColor: colors.border,
+    gap: spacing.lg,
+    justifyContent: 'center',
+    maxWidth: 720,
+    width: '100%',
+    alignSelf: 'center',
   },
-  pillLabel: { fontSize: font.body, color: colors.textSoft },
-  pillValue: { fontSize: font.title, fontWeight: '700', color: colors.text },
+  brand: { fontSize: font.title, fontWeight: '700', color: colors.primary },
+  hello: { fontSize: font.hero, fontWeight: '800', color: colors.text },
 });
