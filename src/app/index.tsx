@@ -1,6 +1,7 @@
 import { ScrollView, Text, View, StyleSheet, useWindowDimensions } from 'react-native';
 import { BigButton } from '../ui/BigButton';
 import { colors, font, spacing, radius } from '../ui/theme';
+import { router } from 'expo-router';
 
 export default function ResidenteInicio() {
   const { width } = useWindowDimensions();
@@ -24,7 +25,7 @@ export default function ResidenteInicio() {
 
       <BigButton
         label="Pedir cita médica"
-        onPress={() => {}}
+        onPress={() => router.push('/cita')}
         style={{ minHeight: 140 }}
       />
     </ScrollView>
